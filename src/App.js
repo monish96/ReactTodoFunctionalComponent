@@ -26,24 +26,42 @@ function App() {
     description: '',
   });
 
-  const handleChange = (event) => {
-    if (event.target.name === 'description') {
-      setValues({
-        ...value,
-        description: event.target.value,
-      });
-    }
+  const [arr, setArr] = useState([]);
 
-    if (event.target.name === 'title') {
-      setValues({
-        ...value,
-        title: event.target.value,
-      });
-    }
+  const [count, setCount] = useState(0);
+
+  const handleChange = (event) => {
+    setValues({
+      ...value,
+      [event.target.name]: event.target.value,
+    });
   };
 
   const handleAdd = () => {
-    alert(value.title + ' - ' + value.description);
+    let temp = [...arr];
+    let obj = {
+      id: count,
+      title: value.title,
+      description: value.description,
+    };
+    temp.push(obj);
+    setCount(count + 1);
+    setArr(temp);
+    setValues({
+      title: '',
+      description: '',
+    });
+  };
+
+  const compareFnc = (obj1, obj2) => {
+    return obj2.id - obj1.id;
+  };
+
+  const handleDelete = (todo) => {
+    let temp = [...arr];
+    let index = temp.findIndex((_x) => _x.id === todo.id);
+    temp.splice(index, 1);
+    setArr(temp);
   };
 
   return (
@@ -87,6 +105,7 @@ function App() {
                 />
               </Stack>
             </CardContent>
+
             <CardActions>
               <Button
                 size='small'
@@ -102,15 +121,24 @@ function App() {
           <Card>
             <CardContent>
               <List>
-                {[1, 2, 3].map((_x, i) => (
+                {arr.length === 0 && <span>No todo</span>}
+                {arr.sort(compareFnc).map((todo) => (
                   <ListItem
+                    key={todo.id}
                     secondaryAction={
-                      <IconButton edge='end' aria-label='delete'>
+                      <IconButton
+                        edge='end'
+                        aria-label='delete'
+                        onClick={() => handleDelete(todo)}
+                      >
                         <DeleteIcon />
                       </IconButton>
                     }
                   >
-                    <ListItemText primary={_x} />
+                    <ListItemText
+                      primary={todo.title}
+                      secondary={todo.description}
+                    />
                   </ListItem>
                 ))}
               </List>
