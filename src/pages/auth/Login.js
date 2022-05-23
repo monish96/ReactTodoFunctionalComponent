@@ -12,6 +12,8 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import * as Yup from 'yup';
+import { useFormik, Form, FormikProvider } from 'formik';
 
 function Copyright(props) {
   return (
@@ -34,7 +36,38 @@ function Copyright(props) {
 const theme = createTheme();
 
 export default function Login() {
-  const handleSubmit = (event) => {
+  const LoginSchema = Yup.object().shape({
+    email: Yup.string()
+      .email('Email is not valid')
+      .required('Email is required'),
+    password: Yup.string()
+      .required('Password is required')
+      .matches(
+        /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
+        'Must Contain 8 Characters, One Uppercase, One Lowercase, One Number and One special case Character'
+      ),
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      email: '',
+      password: '',
+      remember: false,
+    },
+    validationSchema: LoginSchema,
+    onSubmit: async (values, { setErrors, setSubmitting }) => {
+      try {
+        console.log('🚀 => values', values);
+      } catch (err) {
+        console.log('🚀 => err', err);
+      }
+    },
+  });
+
+  const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } =
+    formik;
+
+  const onSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     console.log({
@@ -61,44 +94,56 @@ export default function Login() {
           <Typography component='h1' variant='h5'>
             Sign in
           </Typography>
-          <Box
-            component='form'
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{ mt: 1 }}
-          >
-            <TextField
-              margin='normal'
-              required
-              fullWidth
-              id='email'
-              label='Email Address'
-              name='email'
-              autoComplete='email'
-              autoFocus
-            />
-            <TextField
-              margin='normal'
-              required
-              fullWidth
-              name='password'
-              label='Password'
-              type='password'
-              id='password'
-              autoComplete='current-password'
-            />
-            <FormControlLabel
-              control={<Checkbox value='remember' color='primary' />}
-              label='Remember me'
-            />
-            <Button
-              type='submit'
-              fullWidth
-              variant='contained'
-              sx={{ mt: 3, mb: 2 }}
-            >
-              Sign In
-            </Button>
+          <Box sx={{ mt: 1 }}>
+            <FormikProvider value={formik}>
+              <Form autoComplete='off' noValidate onSubmit={handleSubmit}>
+                <TextField
+                  margin='normal'
+                  required
+                  fullWidth
+                  id='email'
+                  label='Email Address'
+                  name='email'
+                  autoComplete='email'
+                  autoFocus
+                  {...getFieldProps('email')}
+                  error={Boolean(touched.email && errors.email)}
+                  helperText={touched.email && errors.email}
+                />
+                <TextField
+                  margin='normal'
+                  required
+                  fullWidth
+                  name='password'
+                  label='Password'
+                  type='password'
+                  id='password'
+                  autoComplete='current-password'
+                  {...getFieldProps('password')}
+                  error={Boolean(touched.password && errors.password)}
+                  helperText={touched.password && errors.password}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      value='remember'
+                      {...getFieldProps('remember')}
+                      checked={values.remember}
+                      color='primary'
+                    />
+                  }
+                  label='Remember me'
+                />
+                <Button
+                  type='submit'
+                  fullWidth
+                  variant='contained'
+                  sx={{ mt: 3, mb: 2 }}
+                >
+                  Sign In
+                </Button>
+              </Form>
+            </FormikProvider>
             <Grid container>
               <Grid item xs>
                 <Link href='#' variant='body2'>
