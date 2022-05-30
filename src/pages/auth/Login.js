@@ -14,6 +14,11 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import * as Yup from 'yup';
 import { useFormik, Form, FormikProvider } from 'formik';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginAction, selectIsLoadingFromAuth } from '../../redux/slices/auth';
+import { Alert, LinearProgress } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+// import axios from 'axios';
 
 function Copyright(props) {
   return (
@@ -36,16 +41,15 @@ function Copyright(props) {
 const theme = createTheme();
 
 export default function Login() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const isLoading = useSelector(selectIsLoadingFromAuth);
+  const errorMessage = useSelector((state) => state.auth.error);
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+
   const LoginSchema = Yup.object().shape({
-    email: Yup.string()
-      .email('Email is not valid')
-      .required('Email is required'),
-    password: Yup.string()
-      .required('Password is required')
-      .matches(
-        /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
-        'Must Contain 8 Characters, One Uppercase, One Lowercase, One Number and One special case Character'
-      ),
+    email: Yup.string().required('Email is required'),
+    password: Yup.string().required('Password is required'),
   });
 
   const formik = useFormik({
@@ -56,11 +60,39 @@ export default function Login() {
     },
     validationSchema: LoginSchema,
     onSubmit: async (values, { setErrors, setSubmitting }) => {
-      try {
-        console.log('🚀 => values', values);
-      } catch (err) {
-        console.log('🚀 => err', err);
-      }
+      console.log('🚀 => values', values);
+
+      dispatch(
+        loginAction({
+          usernameOremployeeId: values.email,
+          password: values.password,
+        })
+      );
+
+      // fetch('http://secure.focusrtech.com:3030/techstep/api/auth/signin', {
+      //   method: 'post',
+      //   body: JSON.stringify({
+      //     usernameOremployeeId: values.email,
+      //     password: values.password,
+      //   }),
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      // })
+      //   .then((response) => response.json())
+      //   .then((data) => {
+      //     console.log(data);
+      //   })
+      //   .catch((err) => console.log(err));
+
+      // axios
+      //   .get('https://jsonplaceholder.typicode.com/todos')
+      //   .then(function (response) {
+      //     console.log(response);
+      //   })
+      //   .catch(function (error) {
+      //     console.log(error);
+      //   });
     },
   });
 
@@ -74,7 +106,27 @@ export default function Login() {
       email: data.get('email'),
       password: data.get('password'),
     });
+
+    fetch('/data.json', {
+      method: 'post',
+      body: JSON.stringify({
+        usernameOremployeeId: data.get('email'),
+        password: data.get('password'),
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((err) => console.log(err));
   };
+
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/todo');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -95,6 +147,7 @@ export default function Login() {
             Sign in
           </Typography>
           <Box sx={{ mt: 1 }}>
+            {errorMessage && <Alert severity='error'>{errorMessage}</Alert>}
             <FormikProvider value={formik}>
               <Form autoComplete='off' noValidate onSubmit={handleSubmit}>
                 <TextField
@@ -134,11 +187,13 @@ export default function Login() {
                   }
                   label='Remember me'
                 />
+                {isLoading && <LinearProgress />}
                 <Button
                   type='submit'
                   fullWidth
                   variant='contained'
                   sx={{ mt: 3, mb: 2 }}
+                  disabled={isLoading}
                 >
                   Sign In
                 </Button>

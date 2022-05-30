@@ -1,6 +1,7 @@
 import { CircularProgress } from '@mui/material';
 import { Suspense, lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import ProtectedRoutes from '../guards/ProtectedRoutes';
 import TodoLayout from '../layouts/mainlayout/TodoLayout';
 
 const Loadable = (Component) => (props) => {
@@ -26,8 +27,22 @@ export default function Router() {
       <Route path='/signup' element={<Register />} />
 
       <Route path='/todo' element={<TodoLayout />}>
-        <Route path='/todo/' element={<TodoList />} />
-        <Route path='/todo/view' element={<TodoView />} />
+        <Route
+          path='/todo/'
+          element={
+            <ProtectedRoutes>
+              <TodoList />{' '}
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path='/todo/view'
+          element={
+            <ProtectedRoutes>
+              <TodoView />
+            </ProtectedRoutes>
+          }
+        />
         <Route path='*' element={<PageNotFound />} />
       </Route>
 
