@@ -37,7 +37,6 @@ export const getAllTodoAction = createAsyncThunk(
       const response = await api.methods.getData(
         'https://jsonplaceholder.typicode.com/todos'
       );
-      console.log('🚀 => response', response);
 
       if (response.status === 200) {
         return response.data;
@@ -48,23 +47,59 @@ export const getAllTodoAction = createAsyncThunk(
   }
 );
 
-// export const getAllTodoAction = createAsyncThunk(
-//   'auth/GetTodo',
-//   async (_, { rejectWithValue }) => {
-//     try {
-//       const response = await api.methods.getData(
-//         'https://jsonplaceholder.typicode.com/todos'
-//       );
-//       console.log('🚀 => response', response);
+export const createTodoAction = createAsyncThunk(
+  'auth/CreateTodo',
+  async (payload, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await api.methods.postData(
+        'https://jsonplaceholder.typicode.com/todos',
+        payload
+      );
+      console.log('🚀 => response', response);
 
-//       if (response.status === 200) {
-//         return response.data;
-//       }
-//     } catch (error) {
-//       return rejectWithValue(error);
-//     }
-//   }
-// );
+      if (response.status === 201) {
+        return response.data;
+      }
+    } catch (error) {
+      console.log('🚀 => error', error);
+      return rejectWithValue(error);
+    }
+  }
+);
+export const updateTodoAction = createAsyncThunk(
+  'auth/UpdateTodo',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await api.methods.patchData(
+        `https://jsonplaceholder.typicode.com/todos/${payload.id}`,
+        payload
+      );
+
+      if (response.status === 200) {
+        return response.data;
+      }
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
+export const deleteTodoAction = createAsyncThunk(
+  'auth/DeleteTodo',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await api.methods.deleteData(
+        `https://jsonplaceholder.typicode.com/todos/${payload.id}`
+      );
+
+      if (response.status === 200) {
+        return payload.id;
+      }
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
 
 const slice = createSlice({
   name: 'auth',
@@ -101,14 +136,44 @@ const slice = createSlice({
     // Get all todo
     [getAllTodoAction.pending]: (state) => {
       state.isLoading = true;
+      state.todos = [];
     },
     [getAllTodoAction.fulfilled]: (state, { payload }) => {
-      state.isLoading = false;
       state.todos = payload;
+      state.isLoading = false;
     },
     [getAllTodoAction.rejected]: (state, action) => {
-      state.isLoading = false;
       state.error = action.payload;
+      state.isLoading = false;
+    },
+    // Create a todo
+    [createTodoAction.pending]: (state) => {
+      state.isLoading = true;
+    },
+    [createTodoAction.fulfilled]: (state, { payload }) => {
+      let temp = [...state.todos];
+      temp.push(payload);
+      state.todos = temp;
+      state.isLoading = false;
+    },
+    [createTodoAction.rejected]: (state, action) => {
+      state.error = action.payload;
+      state.isLoading = false;
+    },
+    // Delete todo function
+    [deleteTodoAction.pending]: (state) => {
+      state.isLoading = true;
+    },
+    [deleteTodoAction.fulfilled]: (state, { payload }) => {
+      let temp = [...state.todos];
+      let index = temp.findIndex((_x) => _x.id === payload);
+      temp.splice(index, 1);
+      state.todos = temp;
+      state.isLoading = false;
+    },
+    [deleteTodoAction.rejected]: (state, action) => {
+      state.error = action.payload;
+      state.isLoading = false;
     },
   },
 });

@@ -96,30 +96,7 @@ export default function Login() {
     },
   });
 
-  const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } =
-    formik;
-
-  const onSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
-
-    fetch('/data.json', {
-      method: 'post',
-      body: JSON.stringify({
-        usernameOremployeeId: data.get('email'),
-        password: data.get('password'),
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-      })
-      .catch((err) => console.log(err));
-  };
+  const { errors, touched, values, handleSubmit, getFieldProps } = formik;
 
   React.useEffect(() => {
     if (isAuthenticated) {

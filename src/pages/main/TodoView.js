@@ -39,17 +39,6 @@ export default function TodoView({
               value={value.title}
               onChange={handleChange}
             />
-
-            <TextField
-              label='Description'
-              id='title-id'
-              placeholder='Enter a description'
-              size='small'
-              fullWidth
-              name='description'
-              value={value.description}
-              onChange={handleChange}
-            />
           </Stack>
         </DialogContent>
         <DialogActions>

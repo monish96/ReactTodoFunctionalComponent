@@ -15,7 +15,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import AddIcon from '@mui/icons-material/Add';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import TodoView from './TodoView';
-import { getAllTodoAction, selectTodos } from '../../redux/slices/auth';
+import {
+  getAllTodoAction,
+  selectTodos,
+  createTodoAction,
+  updateTodoAction,
+  deleteTodoAction,
+} from '../../redux/slices/auth';
 
 export default function Todo() {
   const dispatch = useDispatch();
@@ -25,7 +31,6 @@ export default function Todo() {
   const [formState, setFormState] = useState('');
   const [value, setEditValues] = useState({
     title: '',
-    description: '',
   });
 
   const compareFnc = (obj1, obj2) => {
@@ -33,10 +38,11 @@ export default function Todo() {
   };
 
   const handleDelete = (todo) => {
-    let temp = [...arr];
-    let index = temp.findIndex((_x) => _x.id === todo.id);
-    temp.splice(index, 1);
+    // let temp = [...arr];
+    // let index = temp.findIndex((_x) => _x.id === todo.id);
+    // temp.splice(index, 1);
     // setArr(temp);
+    dispatch(deleteTodoAction(todo));
   };
 
   const handleView = (todo) => {
@@ -55,13 +61,33 @@ export default function Todo() {
   };
 
   const handleUpdate = (e, event) => {
-    e.preventDefault();
-    if (event === 'add') {
-      console.log(value);
-    } else if (event === 'edit') {
-      console.log(value);
-    } else {
-      alert('Something went wrong');
+    console.log(value);
+    try {
+      e.preventDefault();
+      if (event === 'add') {
+        let payload = {
+          id: arr[arr.length - 1].id + 1,
+          userId: 1,
+          title: value.title,
+          completed: false,
+        };
+
+        dispatch(createTodoAction(payload));
+      } else if (event === 'edit') {
+        let payload = {
+          id: value.id,
+          userId: 1,
+          title: value.title,
+          completed: false,
+        };
+
+        dispatch(updateTodoAction(payload));
+      } else {
+        alert('Something went wrong');
+      }
+      setOpenDialog(false);
+    } catch (err) {
+      console.log('🚀 => err', err);
     }
   };
 
@@ -69,7 +95,6 @@ export default function Todo() {
     setOpenDialog(false);
     setEditValues({
       title: '',
-      description: '',
     });
   };
 
@@ -104,7 +129,7 @@ export default function Todo() {
         <CardContent>
           <List>
             {arr.length === 0 && <span>No todo</span>}
-            {arr.map((todo) => (
+            {[...arr].sort(compareFnc).map((todo) => (
               <ListItem
                 key={todo.id}
                 secondaryAction={
