@@ -18,6 +18,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginAction, selectIsLoadingFromAuth } from '../../redux/slices/auth';
 import { Alert, LinearProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import Footer from './Footer';
 // import axios from 'axios';
 
 function Copyright(props) {
@@ -192,6 +193,7 @@ export default function Login() {
         </Box>
         <Copyright sx={{ mt: 8, mb: 4 }} />
       </Container>
+      <Footer />
     </ThemeProvider>
   );
 }
